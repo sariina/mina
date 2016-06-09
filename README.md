@@ -10,7 +10,13 @@ go get github.com/sariina/mina
 
 To start a server on port 8080 and redirects all requests to www.bing.com run this command:
 
-    mina -p 8080 -h www.bing.com
+    mina -p 8080 -h http://www.bing.com
+
+make a request to a resource in bing.com e.g. http://www.bing.com/?scope=news in your browser of choice.
+now make a request to http://localhost:8080/?scope=news
+
+voila, the same response.
+
 
 ## Options
 

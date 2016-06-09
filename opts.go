@@ -46,7 +46,7 @@ func optionsFromArgs() (opts options) {
 		}
 
 		if url.Host == "" {
-			log.Fatal("Please provide a url e.g. yourdomain.com:1234")
+			log.Fatal("Please provide a valid url e.g. http://yourdomain.com:1234")
 		}
 		opts.Host = url.String()
 
