@@ -14,7 +14,7 @@ const usage string = `Usage:
 Options:
   -p --port=<port>  Port to listen to.
   -h --host=<host>  Host to redirect to.
-	-o --output=<dir> [optional] Path to cache dir.
+  -o --output=<dir> [optional] Path to cache dir.
 	                  Default: $(pwd)/<host>
 
 Example:
