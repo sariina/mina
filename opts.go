@@ -6,6 +6,7 @@ import (
 	"log"
 	neturl "net/url"
 	"os"
+	"strings"
 )
 
 const usage string = `Usage:
@@ -15,7 +16,7 @@ Options:
   -p --port=<port>  Port to listen to.
   -h --host=<host>  Host to redirect to.
   -o --output=<dir> [optional] Path to cache dir.
-	                  Default: $(pwd)/<host>
+                    Default: $(pwd)/<host>
 
 Example:
   mina -p 8080 -h http://name.com:1234/
@@ -32,29 +33,29 @@ func optionsFromArgs() (opts options) {
 		opts.Port = args["--port"].(string)
 	}
 
+	var url *neturl.URL
+
 	if args["--host"] != nil {
-		url, err := neturl.Parse(args["--host"].(string))
+		urlstr := args["--host"].(string)
+		if !strings.HasPrefix(urlstr, "http") {
+			urlstr = "http://" + urlstr
+		}
+
+		url, err = neturl.Parse(urlstr)
 		if err != nil {
 			log.Fatal(err)
-		}
-		if url.Scheme == "" {
-			url.Scheme = "http"
-			url, err = neturl.Parse(url.String())
-			if err != nil {
-				log.Fatal(err)
-			}
 		}
 
 		if url.Host == "" {
 			log.Fatal("Please provide a valid url e.g. http://yourdomain.com:1234")
 		}
 		opts.Host = url.String()
+	}
 
-		if args["--output"] != nil {
-			opts.CacheDir = args["--output"].(string)
-		} else {
-			opts.CacheDir = fmt.Sprintf("%s", url.Host)
-		}
+	if args["--output"] != nil {
+		opts.CacheDir = args["--output"].(string)
+	} else {
+		opts.CacheDir = fmt.Sprintf("%s", url.Host)
 	}
 	return
 }
