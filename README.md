@@ -2,6 +2,10 @@
 
 Mina is a single binary server that repeates your HTTP requests to a another host and caches the response in files.
 
+## Install
+
+go get github.com/sariina/mina
+
 ## Example
 
 To start a server on port 8080 and redirects all requests to www.bing.com run this command:
