@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+type options struct {
+	Port     string
+	Host     string
+	Verbose  bool
+	CacheDir string
+}
+
 const usage string = `Usage:
   mina --port=<port> --host=<host> [--output=<dir>]
 
