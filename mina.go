@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"path/filepath"
+	"time"
 )
 
 func urlToFilename(relURL string) (filename string) {
@@ -28,18 +29,28 @@ func urlToFilename(relURL string) (filename string) {
 func requestHost(w http.ResponseWriter, req *http.Request, filename string) (body []byte, err error) {
 	url := fmt.Sprintf("%s%s", opts.Host, req.URL.String())
 	newreq, err := http.NewRequest(req.Method, url, req.Body)
-
 	if err != nil {
-		fmt.Println(err)
-	}
-
-	client := &http.Client{}
-	res, err := client.Do(newreq)
-	if err != nil {
-		fmt.Println(err)
+		color.Red("Error: %s", err)
 		return
 	}
-	body, _ = ioutil.ReadAll(res.Body)
+
+	newreq.Header = req.Header
+
+	client := &http.Client{
+		Timeout: time.Duration(5 * time.Second),
+	}
+	res, err := client.Do(newreq)
+	if err != nil {
+		color.Red("Error: %s", err)
+		return
+	}
+
+	body, err = ioutil.ReadAll(res.Body)
+	log.Println("body", string(body))
+	if err != nil {
+		color.Red("Error: %s", err)
+		return
+	}
 	return
 }
 
@@ -48,19 +59,22 @@ func mina(w http.ResponseWriter, req *http.Request) {
 	var err error
 	log.Printf("%s %s\n", req.Method, req.URL)
 
-	filename := urlToFilename(req.URL.String())
+	filename := reqToMd5Filename(req)
 	path := filepath.Dir(filename)
 
 	if isCacheExist(filename) {
 		body, err = cacheRead(filename)
+		if err != nil {
+			color.Red("Error: %s", err)
+			return
+		}
 	} else {
 		body, err = requestHost(w, req, filename)
+		if err != nil {
+			color.Red("Error: %s", err)
+			return
+		}
 		go cacheWrite(path, filename, body)
-	}
-
-	if err != nil {
-		color.Red("Error: %s", err)
-		return
 	}
 
 	w.Write(body)
