@@ -46,7 +46,6 @@ func requestHost(w http.ResponseWriter, req *http.Request, filename string) (bod
 	}
 
 	body, err = ioutil.ReadAll(res.Body)
-	log.Println("body", string(body))
 	if err != nil {
 		color.Red("Error: %s", err)
 		return
