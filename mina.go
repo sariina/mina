@@ -62,15 +62,23 @@ func mina(w http.ResponseWriter, req *http.Request) {
 	var dump []byte
 	var err error
 	var resp *http.Response
-	log.Printf("%s %s\n", req.Method, req.URL)
+	var hit = false
 
 	filename := reqToMd5Filename(req)
 	path := filepath.Dir(filename)
 
-	if isCacheExist(filename) {
+	hit = isCacheExist(filename)
+
+	if hit {
 		dump, err = cacheRead(filename)
 	} else {
 		dump, err = getResponseDump(w, req, filename)
+	}
+
+	if hit {
+		log.Printf("%s [HIT] %s %s", filepath.Base(filename)[:8], req.Method, req.URL)
+	} else {
+		log.Printf("%s [MISS] %s %s", filepath.Base(filename)[:8], req.Method, req.URL)
 	}
 
 	if err != nil {
@@ -85,7 +93,9 @@ func mina(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	go cacheWrite(path, filename, dump)
+	if !hit {
+		go cacheWrite(path, filename, dump)
+	}
 
 	for name, _ := range resp.Header {
 		w.Header().Add(name, resp.Header.Get(name))

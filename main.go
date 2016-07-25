@@ -27,9 +27,9 @@ func main() {
 		}
 	}
 
-	fmt.Printf("Listening on localhost:%s\n", opts.Port)
-	fmt.Printf("Redirect requests to %s\n", opts.Host)
-	fmt.Printf("Cache responses to %s\n", absPath)
+	fmt.Printf("  Addr: http://localhost:%s\n", opts.Port)
+	fmt.Printf("  Host: %s\n", opts.Host)
+	fmt.Printf(" Cache: %s\n", absPath)
 
 	http.HandleFunc("/", mina)
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", opts.Port), nil))
