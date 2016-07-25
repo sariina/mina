@@ -4,7 +4,7 @@ Mina is a single binary server that repeates your HTTP requests to a another hos
 
 ## Install
 
-go get github.com/sariina/mina
+    go get github.com/sariina/mina
 
 ## Example
 
