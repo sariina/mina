@@ -1,6 +1,6 @@
 # Mina
 
-Mina is a single binary server that repeates your HTTP requests to a another host and caches the response in files.
+Mina is a single binary HTTP reverse proxy that repeates your HTTP requests to another host and caches the response.
 
 ## Install
 
@@ -23,17 +23,16 @@ voila, the same response.
     mina --help
 
     Usage:
-      mina --port=<port> --host=<host> [--verbose] [--output=<dir>]
+      mina --port=<port> --host=<host> [--output=<dir>]
     
     Options:
       -p --port=<port>  Port to listen to.
       -h --host=<host>  Host to redirect to.
-      -v --verbose      Verbose output.
-      -o --output       Path to cache dir.
+      -o --output=<dir> [optional] Path to cache dir.
+                        Default: $(pwd)/<host>
     
     Example:
-      mina -p 8080 -h domain.com:9000
-
+      mina -p 8080 -h https://www.domain.com:9000
 
 ## Why mina?
 

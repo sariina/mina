@@ -27,7 +27,7 @@ Options:
                     Default: $(pwd)/<host>
 
 Example:
-  mina -p 8080 -h http://name.com:1234
+  mina -p 8080 -h https://www.domain.com:9000
 `
 
 func optionsFromArgs() (opts options) {
