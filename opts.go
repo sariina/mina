@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/docopt/docopt-go"
 	"log"
 	neturl "net/url"
 	"os"
 	"strings"
+
+	"github.com/docopt/docopt-go"
 )
 
 type options struct {

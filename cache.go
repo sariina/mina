@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"crypto/md5"
 	"fmt"
-	"github.com/fatih/color"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"sort"
+
+	"github.com/fatih/color"
 )
 
 func cacheWrite(path string, filename string, body []byte) {
