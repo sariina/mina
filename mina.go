@@ -92,6 +92,7 @@ func mina(w http.ResponseWriter, req *http.Request) {
 		color.Red("Error: %s", err)
 		return
 	}
+	defer resp.Body.Close()
 
 	if !hit {
 		go cacheWrite(path, filename, dump)
