@@ -15,7 +15,7 @@ type options struct {
 	Host     string
 	Verbose  bool
 	CacheDir string
-	Headers  []string
+	Headers  map[string]string
 }
 
 const usage string = `Usage:
@@ -39,7 +39,15 @@ func optionsFromArgs() (opts options) {
 	}
 
 	if args["--header"] != nil {
-		opts.Headers = args["--header"].([]string)
+		opts.Headers = make(map[string]string)
+		for _, header := range args["--header"].([]string) {
+			keyVal := strings.SplitN(header, ":", 2)
+			if len(keyVal) < 2 {
+				continue
+			}
+			opts.Headers[keyVal[0]] = keyVal[1]
+		}
+
 	}
 
 	if args["--port"] != nil {
