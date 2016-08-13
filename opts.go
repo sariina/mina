@@ -15,16 +15,17 @@ type options struct {
 	Host     string
 	Verbose  bool
 	CacheDir string
+	Headers  []string
 }
 
 const usage string = `Usage:
-  mina --port=<port> --host=<host> [--output=<dir>]
+  mina --port=<port> --host=<host> [--output=<dir>] [--header=<header>]...
 
 Options:
-  -p --port=<port>  Port to listen to.
-  -h --host=<host>  Host to redirect to.
-  -o --output=<dir> [optional] Path to cache dir.
-                    Default: $(pwd)/<host>
+  -p --port=<port>     port to listen to
+  -h --host=<host>     host to redirect to
+  -H --header=<header> custom header
+  -o --output=<dir>    [optional] Path to cache dir (default $(pwd)/<host>)
 
 Example:
   mina -p 8080 -h https://www.domain.com:9000
@@ -35,6 +36,10 @@ func optionsFromArgs() (opts options) {
 
 	if err != nil || len(args) == 0 {
 		os.Exit(1)
+	}
+
+	if args["--header"] != nil {
+		opts.Headers = args["--header"].([]string)
 	}
 
 	if args["--port"] != nil {

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -100,6 +101,13 @@ func mina(w http.ResponseWriter, req *http.Request) {
 
 	for name, _ := range resp.Header {
 		w.Header().Add(name, resp.Header.Get(name))
+	}
+	for _, header := range opts.Headers {
+		keyVal := strings.SplitN(header, ":", 2)
+		if len(keyVal) < 2 {
+			continue
+		}
+		w.Header().Add(keyVal[0], keyVal[1])
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
