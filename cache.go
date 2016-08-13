@@ -42,7 +42,7 @@ func isFileExist(filename string) bool {
 	return !os.IsNotExist(err)
 }
 
-func reqToMd5Filename(req *http.Request) string {
+func requestMD5(req *http.Request) string {
 	h := md5.New()
 	headers := headerToSortedString(req.Header)
 	io.WriteString(h, fmt.Sprintf("%+v", req.Method))

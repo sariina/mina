@@ -64,7 +64,7 @@ func mina(w http.ResponseWriter, req *http.Request) {
 	var resp *http.Response
 	var hit = false
 
-	filename := reqToMd5Filename(req)
+	filename := requestMD5(req)
 	path := filepath.Dir(filename)
 
 	hit = isCacheExist(filename)

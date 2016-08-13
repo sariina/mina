@@ -1,3 +1,4 @@
+// Mina is an HTTP reverse proxy server with cache.
 package main
 
 import (
