@@ -2,10 +2,10 @@
 
 Mina is saves API server responses to disk and serves them with its own HTTP server. Some use cases include:
 
-- you want to work with the API server when you or the server is offline
-- sending requests to API server is not free
+- working with the API server when you or the server is offline
+- each request costs money
 - API server forces rate limits 
-- etc
+- etc.
 
 ## Install
 
@@ -13,7 +13,7 @@ Mina is saves API server responses to disk and serves them with its own HTTP ser
 
 ## Example
 
-Start a mina server for Github API:
+Start a mina server for Github API on port 8080:
 
     mina -p 8080 -h https://api.github.com
 
