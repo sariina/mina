@@ -50,7 +50,6 @@ func getResponseDump(w http.ResponseWriter, req *http.Request, filename string) 
 	}
 
 	dump, err = httputil.DumpResponse(res, true)
-	// body, err = ioutil.ReadAll(res.Body)
 	if err != nil {
 		color.Red("Error: %s", err)
 		return
@@ -64,21 +63,22 @@ func mina(w http.ResponseWriter, req *http.Request) {
 	var resp *http.Response
 	var hit = false
 
-	filename := requestMD5(req)
-	path := filepath.Dir(filename)
+	md5, reqDump := requestMD5(req)
+	reqFilename := filepath.Join(opts.CacheDir, fmt.Sprintf("%s.req", md5))
+	resFilename := filepath.Join(opts.CacheDir, fmt.Sprintf("%s.res", md5))
 
-	hit = isCacheExist(filename)
+	hit = isCacheExist(resFilename)
 
 	if hit {
-		dump, err = cacheRead(filename)
+		dump, err = cacheRead(resFilename)
 	} else {
-		dump, err = getResponseDump(w, req, filename)
+		dump, err = getResponseDump(w, req, resFilename)
 	}
 
 	if hit {
-		log.Printf("%s [HIT] %s %s", filepath.Base(filename)[:8], req.Method, req.URL)
+		log.Printf("%s [HIT] %s %s", filepath.Base(resFilename)[:8], req.Method, req.URL)
 	} else {
-		log.Printf("%s [MISS] %s %s", filepath.Base(filename)[:8], req.Method, req.URL)
+		log.Printf("%s [MISS] %s %s", filepath.Base(resFilename)[:8], req.Method, req.URL)
 	}
 
 	if err != nil {
@@ -95,7 +95,8 @@ func mina(w http.ResponseWriter, req *http.Request) {
 	defer resp.Body.Close()
 
 	if !hit {
-		go cacheWrite(path, filename, dump)
+		go cacheWrite(opts.CacheDir, resFilename, dump)
+		go cacheWrite(opts.CacheDir, reqFilename, reqDump)
 	}
 
 	for name, _ := range resp.Header {

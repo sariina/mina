@@ -1,15 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"crypto/md5"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"os"
-	"path/filepath"
-	"sort"
 
 	"github.com/fatih/color"
 )
@@ -42,33 +40,10 @@ func isFileExist(filename string) bool {
 	return !os.IsNotExist(err)
 }
 
-func requestMD5(req *http.Request) string {
+func requestMD5(req *http.Request) (string, []byte) {
 	h := md5.New()
-	headers := headerToSortedString(req.Header)
-	io.WriteString(h, fmt.Sprintf("%+v", req.Method))
-	io.WriteString(h, fmt.Sprintf("%+v", req.URL))
-	io.WriteString(h, fmt.Sprintf("%+v", headers))
-
-	body, _ := ioutil.ReadAll(req.Body)
+	body, _ := httputil.DumpRequest(req, true)
 	io.WriteString(h, fmt.Sprintf("%+v", string(body)))
-	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
 
-	md5 := fmt.Sprintf("%x", h.Sum(nil))
-
-	return filepath.Join(opts.CacheDir, md5)
-}
-
-func headerToSortedString(header http.Header) (ret string) {
-	arr := make([]string, len(header))
-	i := 0
-	for key, _ := range header {
-		arr[i] = key
-		i++
-	}
-	sort.Strings(arr)
-
-	for _, key := range arr {
-		ret += fmt.Sprintf("%s:%s\n", key, header[key])
-	}
-	return
+	return fmt.Sprintf("%x", h.Sum(nil)), body
 }
