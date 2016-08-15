@@ -1,22 +1,32 @@
 # Mina
 
-Mina is a single binary HTTP reverse proxy that repeates your HTTP requests to another host and caches the response.
+Mina is saves API server responses to disk and serves them with its own HTTP server. Some use cases include:
+
+- you want to work with the API server when you or the server is offline
+- sending requests to API server is not free
+- API server forces rate limits 
+- etc
 
 ## Install
 
-    go get github.com/sariina/mina
+    go get -u github.com/sariina/mina
 
 ## Example
 
-To start a server on port 8080 and redirects all requests to www.bing.com run this command:
+Start a mina server for Github API:
 
-    mina -p 8080 -h http://www.bing.com
+    mina -p 8080 -h https://api.github.com
 
-make a request to a resource in bing.com e.g. http://www.bing.com/?scope=news in your browser of choice.
-now make a request to http://localhost:8080/?scope=news
+In your client/broweser/app, instead of sending a request to
 
-voila, the same response.
+    https://api.github.com/users/sariina
 
+send it to
+
+    http://localhost:8080/users/sariina
+
+Voila, the same response. The response is saved to your disk.
+Your app will think that you are using Github API even when you are offline.
 
 ## Options
 
