@@ -15,7 +15,7 @@ Mina is saves API server responses to disk and serves them with its own HTTP ser
 
 Start a mina server for Github API on port 8080:
 
-    mina -p 8080 -h https://api.github.com
+    mina -addr=:8080 -target=https://api.github.com
 
 In your client/broweser/app, instead of sending a request to
 
@@ -33,16 +33,16 @@ Your app will think that you are using Github API even when you are offline.
     mina --help
 
     Usage:
-      mina --port=<port> --host=<host> [--output=<dir>] [--header=<header>]...
+      mina -addr=<addr> -target=<target> [-o=<dir>] [-H=<header>]...
     
     Options:
-      -p --port=<port>      port to listen to
-      -h --host=<host>      host to redirect to
-      -H --header=<header>  custom header
-      -o --output=<dir>     [optional] path to cache dir (default $(pwd)/<host>)
+      -addr    address to listen to
+      -target  target to route to
+      -H       custom header
+      -o       [optional] cache dir
     
     Example:
-      mina -p 8080 -h https://www.domain.com:9000
+      mina -addr=:8080 -target=https://www.domain.com:9000
 
 ## Why mina?
 
