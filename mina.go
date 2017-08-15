@@ -15,8 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 type Mina struct {
@@ -72,7 +70,7 @@ func writeRespToWR(wr http.ResponseWriter, resp *http.Response, headers map[stri
 	// write body
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		color.Red("Error: %s", err)
+		log.Printf("\033[0;31mError: %s\033[0m", err)
 		return
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
