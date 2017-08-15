@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
 )
@@ -18,7 +19,7 @@ const usage string = `Usage:
 Options:
   -addr    address to listen to
   -target  target to route to
-  -H       custom header
+  -H       [optional] custom header
   -o       [optional] cache dir
 
 Example:
@@ -42,7 +43,7 @@ func (h colonSeparatedFlags) Set(value string) error {
 func main() {
 	var (
 		flagListen   = flag.String("addr", "", "address to listen to")
-		flagTarget   = flag.String("target", "", "taget to route to")
+		flagTarget   = flag.String("target", "", "target to route to")
 		flagCacheDir = flag.String("o", "", "path to cache dir")
 		flagHeaders  = make(colonSeparatedFlags)
 	)
@@ -64,14 +65,18 @@ func main() {
 
 	// flagCacheDir
 	if *flagCacheDir == "" {
-		*flagCacheDir = fmt.Sprintf("%s", targetURL.Host)
+		usr, err := user.Current()
+		if err != nil {
+			log.Fatal(err)
+		}
+		*flagCacheDir = fmt.Sprintf("%s/.config/mina/%s", usr.HomeDir, targetURL.Host)
 	}
 	*flagCacheDir, err = filepath.Abs(*flagCacheDir)
 	if err != nil {
 		log.Fatalln(err)
 	}
 	if !isFileExist(*flagCacheDir) {
-		err = os.Mkdir(*flagCacheDir, 0755)
+		err = os.MkdirAll(*flagCacheDir, 0755)
 		if err != nil {
 			log.Fatalln(err)
 		}
