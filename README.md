@@ -13,6 +13,13 @@ Mina is saves API server responses to disk and serves them with its own HTTP ser
 
     go get -u github.com/sariina/mina
 
+Or
+
+    git clone https://github.com/sariina/mina
+    cd mina
+    make build
+    sudo make install
+
 ## Example
 
 Start a mina server for Github API on port 8080:
@@ -35,16 +42,16 @@ Your app will think that you are using Github API even when you are offline.
     mina --help
 
     Usage:
-      mina -addr=<addr> -target=<target> [-o=<dir>] [-H=<header>]...
-    
+    mina -addr=<addr> -target=<target> [-o=<dir>] [-H=<header>]...
+
     Options:
-      -addr    address to listen to
-      -target  target to route to
-      -H       custom header
-      -o       [optional] cache dir
-    
+    -addr    address to listen to
+    -target  target to route to
+    -H       [optional] custom header
+    -o       [optional] cache dir
+
     Example:
-      mina -addr=:8080 -target=https://www.domain.com:9000
+    mina -addr=:8080 -target=https://www.domain.com:9000
 
 ## Why mina?
 
