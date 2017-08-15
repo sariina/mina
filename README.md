@@ -11,14 +11,7 @@ Mina is saves API server responses to disk and serves them with its own HTTP ser
 
 ## Install
 
-    go get -u github.com/sariina/mina
-
-Or
-
-    git clone https://github.com/sariina/mina
-    cd mina
-    make build
-    sudo make install
+    go get -u github.com/sariina/mina
 
 ## Example
 
