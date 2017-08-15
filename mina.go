@@ -59,8 +59,8 @@ func singleJoiningSlash(a, b string) string {
 
 func writeRespToWR(wr http.ResponseWriter, resp *http.Response, headers map[string]string) {
 	// write headers
-	for name, _ := range resp.Header {
-		// overwite custom headers
+	for name := range resp.Header {
+		// overwrite custom headers
 		if _, ok := headers[name]; !ok {
 			wr.Header().Add(name, resp.Header.Get(name))
 		}
