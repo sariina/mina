@@ -15,8 +15,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/fatih/color"
 )
 
 type Mina struct {
@@ -46,21 +44,21 @@ func newSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 // singleJoiningSlash is coped from stdlib, because it was called from
 // newSingleHostReverseProxy.
 func singleJoiningSlash(a, b string) string {
-	aslash := strings.HasSuffix(a, "/")
-	bslash := strings.HasPrefix(b, "/")
+	aSlash := strings.HasSuffix(a, "/")
+	bSlash := strings.HasPrefix(b, "/")
 	switch {
-	case aslash && bslash:
+	case aSlash && bSlash:
 		return a + b[1:]
-	case !aslash && !bslash:
+	case !aSlash && !bSlash:
 		return a + "/" + b
 	}
 	return a + b
 }
 
-func writeRespToWR(wr http.ResponseWriter, resp *http.Response, headers map[string]string) {
+func writeHeadersToWR(wr http.ResponseWriter, resp *http.Response, headers map[string]string) {
 	// write headers
-	for name, _ := range resp.Header {
-		// overwite custom headers
+	for name := range resp.Header {
+		// overwrite custom headers
 		if _, ok := headers[name]; !ok {
 			wr.Header().Add(name, resp.Header.Get(name))
 		}
@@ -68,11 +66,12 @@ func writeRespToWR(wr http.ResponseWriter, resp *http.Response, headers map[stri
 	for name, value := range headers {
 		wr.Header().Add(name, value)
 	}
+}
 
-	// write body
+func writeBodyToWR(wr http.ResponseWriter, resp *http.Response) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		color.Red("Error: %s", err)
+		log.Printf("\033[0;31mError: %s\033[0m", err)
 		return
 	}
 	resp.Body = ioutil.NopCloser(bytes.NewBuffer(body))
@@ -108,6 +107,9 @@ func requestMD5(req *http.Request) (string, []byte) {
 func (m *Mina) NewHandler() func(http.ResponseWriter, *http.Request) {
 	p := newSingleHostReverseProxy(m.Target)
 	return func(wr http.ResponseWriter, req *http.Request) {
+		req.Header.Del("If-Modified-Since")
+		req.Header.Del("If-None-Match")
+
 		md5, reqDump := requestMD5(req)
 		reqFilename := filepath.Join(m.CacheDir, fmt.Sprintf("%s.req", md5))
 		resFilename := filepath.Join(m.CacheDir, fmt.Sprintf("%s.res", md5))
@@ -120,14 +122,15 @@ func (m *Mina) NewHandler() func(http.ResponseWriter, *http.Request) {
 				return
 			}
 
-			dumpio := bufio.NewReader(bytes.NewBuffer(resDump))
-			resp, err := http.ReadResponse(dumpio, req)
+			dumpIO := bufio.NewReader(bytes.NewBuffer(resDump))
+			resp, err := http.ReadResponse(dumpIO, req)
 			if err != nil {
 				log.Printf("Error: %s", err)
 				return
 			}
 			defer resp.Body.Close()
-			writeRespToWR(wr, resp, m.Headers)
+			writeHeadersToWR(wr, resp, m.Headers)
+			writeBodyToWR(wr, resp)
 		} else {
 			log.Printf("%s [MISS] %s %s", filepath.Base(resFilename)[:8], req.Method, req.URL)
 
@@ -137,16 +140,19 @@ func (m *Mina) NewHandler() func(http.ResponseWriter, *http.Request) {
 			resp := wrRecorder.Result()
 			defer resp.Body.Close()
 
-			writeRespToWR(wr, resp, m.Headers)
+			writeHeadersToWR(wr, resp, m.Headers)
+			writeBodyToWR(wr, resp)
 
-			resDump, err := httputil.DumpResponse(resp, true)
-			if err != nil {
-				log.Printf("Error: %s", err)
-				return
+			if resp.StatusCode != http.StatusNotModified {
+				resDump, err := httputil.DumpResponse(resp, true)
+				if err != nil {
+					log.Printf("Error: %s", err)
+					return
+				}
+
+				go cacheWrite(m.CacheDir, resFilename, resDump)
+				go cacheWrite(m.CacheDir, reqFilename, reqDump)
 			}
-
-			go cacheWrite(m.CacheDir, resFilename, resDump)
-			go cacheWrite(m.CacheDir, reqFilename, reqDump)
 		}
 	}
 }
