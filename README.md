@@ -11,7 +11,7 @@ Mina is saves API server responses to disk and serves them with its own HTTP ser
 
 ## Install
 
-    go get -u github.com/sariina/mina
+`go get -u github.com/sariina/mina`
 
 ## Example
 
