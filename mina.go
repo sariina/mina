@@ -120,8 +120,8 @@ func (m *Mina) NewHandler() func(http.ResponseWriter, *http.Request) {
 				return
 			}
 
-			dumpio := bufio.NewReader(bytes.NewBuffer(resDump))
-			resp, err := http.ReadResponse(dumpio, req)
+			dumpIO := bufio.NewReader(bytes.NewBuffer(resDump))
+			resp, err := http.ReadResponse(dumpIO, req)
 			if err != nil {
 				log.Printf("Error: %s", err)
 				return
