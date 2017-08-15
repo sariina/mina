@@ -44,12 +44,12 @@ func newSingleHostReverseProxy(target *url.URL) *httputil.ReverseProxy {
 // singleJoiningSlash is coped from stdlib, because it was called from
 // newSingleHostReverseProxy.
 func singleJoiningSlash(a, b string) string {
-	aslash := strings.HasSuffix(a, "/")
-	bslash := strings.HasPrefix(b, "/")
+	aSlash := strings.HasSuffix(a, "/")
+	bSlash := strings.HasPrefix(b, "/")
 	switch {
-	case aslash && bslash:
+	case aSlash && bSlash:
 		return a + b[1:]
-	case !aslash && !bslash:
+	case !aSlash && !bSlash:
 		return a + "/" + b
 	}
 	return a + b
