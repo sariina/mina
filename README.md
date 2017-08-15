@@ -1,5 +1,7 @@
 # Mina
 
+[![Build Status](https://travis-ci.org/sariina/mina.svg?branch=master)](https://travis-ci.org/sariina/mina)
+
 Mina is saves API server responses to disk and serves them with its own HTTP server. Some use cases include:
 
 - working with the API server when you or the server is offline
