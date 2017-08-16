@@ -27,6 +27,7 @@ func TestMina(t *testing.T) {
 		CacheDir: cacheDir,
 		Headers:  map[string]string{},
 	}
+	m.initMemory()
 
 	frontend := httptest.NewServer(m)
 	defer frontend.Close()
@@ -77,6 +78,7 @@ func TestNotModifiedStatusCode(t *testing.T) {
 		CacheDir: cacheDir,
 		Headers:  map[string]string{},
 	}
+	m.initMemory()
 
 	frontend := httptest.NewServer(m)
 	defer frontend.Close()

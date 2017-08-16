@@ -98,6 +98,8 @@ func main() {
 		CacheDir: *flagCacheDir,
 		Headers:  flagHeaders,
 	}
+	m.initMemory()
+
 	http.HandleFunc("/", m.ServeHTTP)
 	log.Fatal(http.Serve(ln, nil))
 }
