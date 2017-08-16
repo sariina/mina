@@ -11,7 +11,7 @@ Mina is saves API server responses to disk and serves them with its own HTTP ser
 
 ## Install
 
-`go get -u github.com/sariina/mina`
+    go get -u github.com/sariina/mina
 
 ## Example
 
@@ -35,7 +35,7 @@ Your app will think that you are using Github API even when you are offline.
     mina --help
 
     Usage:
-    mina -addr=<addr> -target=<target> [-o=<dir>] [-H=<header>]...
+      mina -addr=<addr> -target=<target> [-o=<dir>] [-H=<header>]...
 
     Options:
     -addr    address to listen to
@@ -44,7 +44,7 @@ Your app will think that you are using Github API even when you are offline.
     -o       [optional] cache dir
 
     Example:
-    mina -addr=:8080 -target=https://www.domain.com:9000
+      mina -addr=:8080 -target=https://www.domain.com:9000
 
 ## Why mina?
 

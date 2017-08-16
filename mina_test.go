@@ -51,7 +51,6 @@ func TestMina(t *testing.T) {
 }
 
 func TestNotModifiedStatusCode(t *testing.T) {
-	// Ignoring sync.Mutex for two requests that are not concurrent
 	firstTime := true
 
 	want := []byte("tweet")
