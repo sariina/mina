@@ -46,7 +46,7 @@ func TestMina(t *testing.T) {
 		t.Fatalf("got %q; want %q", gotBody, string(want))
 	}
 	if gotHeader != XHeaderValueHit {
-		t.Fatalf("got %q; want %q", gotBody, XHeaderValueHit)
+		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueHit)
 	}
 }
 
@@ -87,7 +87,7 @@ func TestNotModifiedStatusCode(t *testing.T) {
 		t.Fatalf("got %q; want %q", gotBody, string(want))
 	}
 	if gotHeader != XHeaderValueMiss {
-		t.Fatalf("got %q; want %q", gotBody, XHeaderValueMiss)
+		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueMiss)
 	}
 
 	// second time
@@ -96,7 +96,7 @@ func TestNotModifiedStatusCode(t *testing.T) {
 		t.Fatalf("got %q; want %q", gotBody, string(want))
 	}
 	if gotHeader != XHeaderValueHit {
-		t.Fatalf("got %q; want %q", gotBody, XHeaderValueHit)
+		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueHit)
 	}
 }
 
