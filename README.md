@@ -36,13 +36,13 @@ Your app will think that you are using Github API even when you are offline.
 
     Usage:
       mina -addr=<addr> -target=<target> [-o=<dir>] [-H=<header>]...
-    
+
     Options:
-      -addr    address to listen to
-      -target  target to route to
-      -H       custom header
-      -o       [optional] cache dir
-    
+    -addr    address to listen to
+    -target  target to route to
+    -H       [optional] custom header
+    -o       [optional] cache dir
+
     Example:
       mina -addr=:8080 -target=https://www.domain.com:9000
 
