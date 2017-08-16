@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -8,9 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"os/user"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 const usage string = `Usage:
@@ -100,6 +103,31 @@ func main() {
 	}
 	m.initMemory()
 
-	http.HandleFunc("/", m.ServeHTTP)
-	log.Fatal(http.Serve(ln, nil))
+	// TODO: handle other signals
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+	handler := http.NewServeMux()
+	handler.HandleFunc("/", m.ServeHTTP)
+	server := &http.Server{
+		Addr:    *flagListen,
+		Handler: handler,
+	}
+	go func() {
+		log.Printf("Listening on http://0.0.0.0%s\n", server.Addr)
+		log.Fatal(server.Serve(ln))
+	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	server.Shutdown(ctx)
+
+	<-sig
+
+	log.Println("Saving in-memory caches")
+
+	inMemoryCache.Shutdown()
+
+	log.Println("Shutting down the server")
+
+	cancel()
 }
