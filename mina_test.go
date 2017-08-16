@@ -114,3 +114,49 @@ func get(url string) (body string, xHeaderValue string) {
 	}
 	return string(buf), res.Header.Get(XHeaderName)
 }
+
+func TestIgnoreHeader(t *testing.T) {
+	want := []byte("tweet")
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(want)
+	}))
+	defer backend.Close()
+
+	cacheDir := os.TempDir()
+	url, err := url.Parse(backend.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := &Mina{
+		Target:   url,
+		CacheDir: cacheDir,
+		Headers:  map[string]string{},
+	}
+	m.initMemory()
+
+	frontend := httptest.NewServer(m)
+	defer frontend.Close()
+
+	req, err := http.NewRequest("GET", frontend.URL, nil)
+	if err != nil {
+		t.Fatalf("err on new request %q", err)
+	}
+	req.Header.Add(XHeaderName, XHeaderValueIgnore)
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("err on new request %q", err)
+	}
+	defer resp.Body.Close()
+	buf, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gotBody, gotHeader := string(buf), resp.Header.Get(XHeaderName)
+	if gotBody != string(want) {
+		t.Fatalf("got %q; want %q", gotBody, string(want))
+	}
+	if gotHeader != XHeaderValueIgnore {
+		t.Fatalf("got %q; want %q", gotBody, XHeaderValueIgnore)
+	}
+}
