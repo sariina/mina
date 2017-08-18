@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -8,9 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/signal"
 	"os/user"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 const usage string = `Usage:
@@ -21,6 +24,7 @@ Options:
   -target  target to route to
   -H       [optional] custom header
   -o       [optional] cache dir
+  -log     [optional] log file
 
 Example:
   mina -addr=:8080 -target=https://www.domain.com:9000`
@@ -45,6 +49,7 @@ func main() {
 		flagListen   = flag.String("addr", "", "address to listen to")
 		flagTarget   = flag.String("target", "", "target to route to")
 		flagCacheDir = flag.String("o", "", "path to cache dir")
+		flagLogFile  = flag.String("log", "", "path to log file")
 		flagHeaders  = make(colonSeparatedFlags)
 	)
 	flag.Var(&flagHeaders, "H", "custom header, e.g. 'Key: Value'")
@@ -87,6 +92,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if *flagLogFile != "" {
+		f, err := os.OpenFile(*flagLogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		defer f.Close()
+		log.SetOutput(f)
+		fmt.Printf("LogFile: %s\n", *flagLogFile)
+	}
+
 	// info
 	fmt.Printf("Address: %v\n", *flagListen)
 	fmt.Printf(" Target: %s\n", targetURL.String())
@@ -98,6 +113,33 @@ func main() {
 		CacheDir: *flagCacheDir,
 		Headers:  flagHeaders,
 	}
-	http.HandleFunc("/", m.ServeHTTP)
-	log.Fatal(http.Serve(ln, nil))
+	m.initMemory()
+
+	// TODO: handle other signals
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+
+	handler := http.NewServeMux()
+	handler.HandleFunc("/", m.ServeHTTP)
+	server := &http.Server{
+		Addr:    *flagListen,
+		Handler: handler,
+	}
+	go func() {
+		log.Printf("Listening on http://0.0.0.0%s\n", server.Addr)
+		log.Fatal(server.Serve(ln))
+	}()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	server.Shutdown(ctx)
+
+	<-sig
+
+	log.Println("Saving in-memory caches")
+
+	inMemoryCache.Shutdown()
+
+	log.Println("Shutting down the server")
+
+	cancel()
 }
