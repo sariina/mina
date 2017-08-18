@@ -42,6 +42,7 @@ Your app will think that you are using Github API even when you are offline.
     -target  target to route to
     -H       [optional] custom header
     -o       [optional] cache dir
+    -log     [optional] log file
 
     Example:
       mina -addr=:8080 -target=https://www.domain.com:9000

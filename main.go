@@ -24,6 +24,7 @@ Options:
   -target  target to route to
   -H       [optional] custom header
   -o       [optional] cache dir
+  -log     [optional] log file
 
 Example:
   mina -addr=:8080 -target=https://www.domain.com:9000`
@@ -48,6 +49,7 @@ func main() {
 		flagListen   = flag.String("addr", "", "address to listen to")
 		flagTarget   = flag.String("target", "", "target to route to")
 		flagCacheDir = flag.String("o", "", "path to cache dir")
+		flagLogFile  = flag.String("log", "", "path to log file")
 		flagHeaders  = make(colonSeparatedFlags)
 	)
 	flag.Var(&flagHeaders, "H", "custom header, e.g. 'Key: Value'")
@@ -88,6 +90,16 @@ func main() {
 	ln, err := net.Listen("tcp", *flagListen)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if *flagLogFile != "" {
+		f, err := os.OpenFile(*flagLogFile, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		defer f.Close()
+		log.SetOutput(f)
+		fmt.Printf("LogFile: %s\n", *flagLogFile)
 	}
 
 	// info
