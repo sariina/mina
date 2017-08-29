@@ -50,6 +50,51 @@ func TestMina(t *testing.T) {
 	}
 }
 
+func TestIgnoreHeader(t *testing.T) {
+	want := []byte("tweet")
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(want)
+	}))
+	defer backend.Close()
+
+	cacheDir := os.TempDir()
+	url, err := url.Parse(backend.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := &Mina{
+		Target:   url,
+		CacheDir: cacheDir,
+		Headers:  map[string]string{},
+	}
+
+	frontend := httptest.NewServer(m)
+	defer frontend.Close()
+
+	req, err := http.NewRequest("GET", frontend.URL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Add(XHeaderName, XHeaderValueIgnore)
+	client := http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer res.Body.Close()
+	buf, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gotBody, gotHeader := string(buf), res.Header.Get(XHeaderName)
+	if gotBody != string(want) {
+		t.Fatalf("got %q; want %q", gotBody, string(want))
+	}
+	if gotHeader != XHeaderValueIgnore {
+		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueIgnore)
+	}
+}
+
 func TestNotModifiedStatusCode(t *testing.T) {
 	firstTime := true
 

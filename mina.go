@@ -18,9 +18,10 @@ import (
 )
 
 const (
-	XHeaderName      = "X-MINA-CACHE"
-	XHeaderValueHit  = "hit"
-	XHeaderValueMiss = "miss"
+	XHeaderName        = "X-MINA-CACHE"
+	XHeaderValueHit    = "hit"
+	XHeaderValueMiss   = "miss"
+	XHeaderValueIgnore = "ignore"
 )
 
 type Mina struct {
@@ -115,6 +116,18 @@ func (m *Mina) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	p := newSingleHostReverseProxy(m.Target)
 	req.Header.Del("If-Modified-Since")
 	req.Header.Del("If-None-Match")
+
+	if req.Header.Get(XHeaderName) == XHeaderValueIgnore {
+		wrRecorder := httptest.NewRecorder()
+		p.ServeHTTP(wrRecorder, req)
+
+		resp := wrRecorder.Result()
+		defer resp.Body.Close()
+
+		writeHeadersToWR(wr, resp, m.Headers, XHeaderValueIgnore)
+		writeBodyToWR(wr, resp)
+		return
+	}
 
 	md5, reqDump := requestMD5(req)
 	reqFilename := filepath.Join(m.CacheDir, fmt.Sprintf("%s.req", md5))
