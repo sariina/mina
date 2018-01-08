@@ -22,6 +22,8 @@ const (
 	XHeaderValueHit    = "hit"
 	XHeaderValueMiss   = "miss"
 	XHeaderValueIgnore = "ignore"
+
+	RequestOptionsHeaderName = "X-MINA-OPTIONS"
 )
 
 type Mina struct {
@@ -117,14 +119,14 @@ func (m *Mina) ServeHTTP(wr http.ResponseWriter, req *http.Request) {
 	req.Header.Del("If-Modified-Since")
 	req.Header.Del("If-None-Match")
 
-	if req.Header.Get(XHeaderName) == XHeaderValueIgnore {
+	if req.Header.Get(RequestOptionsHeaderName) == XHeaderValueIgnore {
 		wrRecorder := httptest.NewRecorder()
 		p.ServeHTTP(wrRecorder, req)
 
 		resp := wrRecorder.Result()
 		defer resp.Body.Close()
 
-		writeHeadersToWR(wr, resp, m.Headers, XHeaderValueIgnore)
+		writeHeadersToWR(wr, resp, m.Headers, XHeaderValueMiss)
 		writeBodyToWR(wr, resp)
 		return
 	}
