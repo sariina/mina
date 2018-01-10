@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -9,6 +10,16 @@ import (
 	"os"
 	"testing"
 )
+
+func checkResponse(body string, wantBody string, header string, wantHeader string) error {
+	if body != wantBody {
+		return fmt.Errorf("body got %q; want %q", body, wantBody)
+	}
+	if header != wantHeader {
+		return fmt.Errorf("header got %q; want %q", header, wantHeader)
+	}
+	return nil
+}
 
 func TestMina(t *testing.T) {
 	want := []byte("tweet")
@@ -33,20 +44,75 @@ func TestMina(t *testing.T) {
 
 	// first time
 	gotBody, gotHeader := get(frontend.URL)
-	if gotBody != string(want) {
-		t.Fatalf("got %q; want %q", gotBody, string(want))
-	}
-	if gotHeader != XHeaderValueMiss {
-		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueMiss)
+	err = checkResponse(gotBody, string(want), gotHeader, XHeaderValueMiss)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// second time
 	gotBody, gotHeader = get(frontend.URL)
-	if gotBody != string(want) {
-		t.Fatalf("got %q; want %q", gotBody, string(want))
+	err = checkResponse(gotBody, string(want), gotHeader, XHeaderValueHit)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if gotHeader != XHeaderValueHit {
-		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueHit)
+}
+
+func TestIgnoreHeader(t *testing.T) {
+	want := []byte("tweet")
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Write(want)
+	}))
+	defer backend.Close()
+
+	cacheDir := os.TempDir()
+	url, err := url.Parse(backend.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	m := &Mina{
+		Target:   url,
+		CacheDir: cacheDir,
+		Headers:  map[string]string{},
+	}
+
+	frontend := httptest.NewServer(m)
+	defer frontend.Close()
+
+	req, err := http.NewRequest("GET", frontend.URL, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	req.Header.Add(RequestOptionsHeaderName, XHeaderValueIgnore)
+
+	client := http.Client{}
+	firstResponse, err := client.Do(req) // first time to call
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer firstResponse.Body.Close()
+	buf, err := ioutil.ReadAll(firstResponse.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gotBody, gotHeader := string(buf), firstResponse.Header.Get(XHeaderName)
+	err = checkResponse(gotBody, string(want), gotHeader, XHeaderValueMiss)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	secondResponse, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer secondResponse.Body.Close()
+	buf, err = ioutil.ReadAll(secondResponse.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	gotBody, gotHeader = string(buf), secondResponse.Header.Get(XHeaderName)
+	err = checkResponse(gotBody, string(want), gotHeader, XHeaderValueMiss)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -83,20 +149,16 @@ func TestNotModifiedStatusCode(t *testing.T) {
 
 	// first time with If-Modified-Since header
 	gotBody, gotHeader := get(frontend.URL)
-	if gotBody != string(want) {
-		t.Fatalf("got %q; want %q", gotBody, string(want))
-	}
-	if gotHeader != XHeaderValueMiss {
-		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueMiss)
+	err = checkResponse(gotBody, string(want), gotHeader, XHeaderValueMiss)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// second time
 	gotBody, gotHeader = get(frontend.URL)
-	if gotBody != string(want) {
-		t.Fatalf("got %q; want %q", gotBody, string(want))
-	}
-	if gotHeader != XHeaderValueHit {
-		t.Fatalf("got %q; want %q", gotHeader, XHeaderValueHit)
+	err = checkResponse(gotBody, string(want), gotHeader, XHeaderValueHit)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
