@@ -2,4 +2,8 @@ language: go
 
 go:
   - 1.8
+  - 1.9
   - master
+
+script:
+  - make test-with-race
